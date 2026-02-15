@@ -1,6 +1,5 @@
 const express = require('express')
-const Database = require('better-sqlite3')
-
+const sqlite3 = require('sqlite3')
 const path = require('path')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
@@ -11,19 +10,20 @@ app.use(express.json())
 app.use(cors())
 
 const dbPath = path.join(__dirname, "todo.db")
-
 let db = null
 
 /* ---------------- DB INITIALIZATION ---------------- */
 
-const initializeDbAndServer = async () => {
+const initializeDbAndServer = () => {
   try {
-    db = await open({
-      filename: dbPath,
-      driver: sqlite3.Database,
+    db = new sqlite3.Database(dbPath, (error) => {
+      if (error) {
+        console.log(`DB Error: ${error.message}`)
+        process.exit(1)
+      } else {
+        console.log("SQLite DB Connected")
+      }
     })
-
-    await db.exec(`PRAGMA foreign_keys = ON;`)
 
     app.listen(3000, () => {
       console.log("Server Running at http://localhost:3000/")
